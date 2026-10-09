@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -7,82 +8,140 @@
   <meta name="description" content="A personal movie journal to rate and rank your favorite films.">
   <title>Movie Rating</title>
   <link rel="icon" type="image/svg+xml" href="icon.svg">
-  <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
   <script defer src="script.js"></script>
 </head>
 <body>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <div id="authPage" class="auth-page hidden">
-    <div class="auth-card">
-      <span class="app-icon">✦</span>
-      <h1>Movie Rating<span class="accent">.</span></h1>
-      <p>Your movies, ranked and remembered. Sign in once on each device to keep everything synced.</p>
-      <form id="authForm">
-        <label for="email">Email address</label>
-        <input id="email" type="email" autocomplete="email" placeholder="you@example.com" required>
-        <button id="authButton" class="primary-btn full" type="submit">Send sign-in link <span>↗</span></button>
-      </form>
-      <p id="authMessage" class="auth-message" aria-live="polite"></p>
-      <small>No password needed. We'll email you a secure link.</small>
-    </div>
-  </div>
-
-  <div id="app" class="shell hidden">
+  <div id="app" class="shell">
     <header class="topbar">
-      <a class="brand" href="./" aria-label="Movie Rating home"><span class="brand-mark">✦</span> Movie Rating<span class="accent">.</span></a>
-      <div class="top-actions"><span class="sync"><i></i> Cloud synced</span><button id="signOut" class="ghost-btn" title="Sign out">Sign out</button></div>
+      <a class="brand" href="./" aria-label="Movie Rating home">
+        <span class="brand-mark">✦</span> Movie Rating<span class="accent">.</span>
+      </a>
+      <div class="top-actions">
+        <span id="syncStatus" class="sync"><i></i> Connecting...</span>
+        <button id="shareLink" class="ghost-btn" title="Copy a private link to sync another device">Copy Sync Link</button>
+      </div>
     </header>
 
     <main>
       <section class="hero">
-        <div><div class="eyebrow">YOUR PERSONAL FILM JOURNAL</div><h1>The watchlist,<br><em>with opinions.</em></h1><p>A home for every movie you've watched, loved, or regretted.</p></div>
-        <div class="hero-decoration" aria-hidden="true"><div class="film-circle">★<span>10</span></div></div>
+        <div>
+          <div class="eyebrow">YOUR PERSONAL FILM JOURNAL</div>
+          <h1>The watchlist,<br><em>with opinions.</em></h1>
+          <p>A home for every movie you've watched, loved, or regretted.</p>
+        </div>
+        <div class="hero-decoration" aria-hidden="true">
+          <div class="film-circle">★<span>10</span></div>
+        </div>
       </section>
+
       <section class="stats" aria-label="Movie rating statistics">
         <div class="stat"><span>Movies rated</span><strong id="movieCount">0</strong></div>
         <div class="stat"><span>Average score</span><strong id="averageScore">—</strong></div>
         <div class="stat"><span>Your top rating</span><strong id="topScore">—</strong></div>
       </section>
+
       <section class="library">
-        <div class="section-heading"><div><div class="eyebrow">THE COLLECTION</div><h2>My rankings <span id="totalPill" class="pill">0</span></h2></div></div>
-        <div class="toolbar">
-          <label class="searchbox"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="search" placeholder="Find a movie..." autocomplete="off" aria-label="Search movies"></label>
-          <label class="selectbox"><span>Sort:</span><select id="sort"><option value="highest">Highest rated</option><option value="recent">Recently added</option><option value="lowest">Lowest rated</option><option value="title">A to Z</option><option value="year">Release year</option></select></label>
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">THE COLLECTION</div>
+            <h2>My rankings <span id="totalPill" class="pill">0</span></h2>
+          </div>
         </div>
-        <div id="loading" class="loading"><div class="spinner"></div> Loading your movies...</div>
+        <div class="toolbar">
+          <label class="searchbox">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"/>
+              <path d="m20 20-4-4"/>
+            </svg>
+            <input id="search" placeholder="Find a movie..." autocomplete="off" aria-label="Search movies">
+          </label>
+          <label class="selectbox">
+            <span>Sort:</span>
+            <select id="sort">
+              <option value="highest">Highest rated</option>
+              <option value="recent">Recently added</option>
+              <option value="lowest">Lowest rated</option>
+              <option value="title">A to Z</option>
+              <option value="year">Release year</option>
+            </select>
+          </label>
+        </div>
+        <div id="loading" class="loading">
+          <div class="spinner"></div> Loading your movies...
+        </div>
         <div id="movieList" class="movie-list"></div>
-        <div id="empty" class="empty hidden"><div class="empty-icon">✦</div><h3>No movies here yet</h3><p>Add your first rating, and your collection will start taking shape.</p><button id="emptyAdd" class="primary-btn">Add a movie +</button></div>
+        <div id="empty" class="empty hidden">
+          <div class="empty-icon">✦</div>
+          <h3>No movies here yet</h3>
+          <p>Add your first rating, and your collection will start taking shape.</p>
+          <button id="emptyAdd" class="primary-btn">Add a movie +</button>
+        </div>
       </section>
     </main>
+
     <button id="addButton" class="fab" aria-label="Add movie" title="Add a movie">+</button>
     <footer>Made for your movie opinions <span>✦</span></footer>
   </div>
 
   <div id="overlay" class="overlay hidden">
     <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div class="modal-head"><div><div class="eyebrow">YOUR FILM JOURNAL</div><h2 id="modalTitle">Add a movie</h2></div><button id="closeModal" class="round-btn" type="button" aria-label="Close">×</button></div>
+      <div class="modal-head">
+        <div>
+          <div class="eyebrow">YOUR FILM JOURNAL</div>
+          <h2 id="modalTitle">Add a movie</h2>
+        </div>
+        <button id="closeModal" class="round-btn" type="button" aria-label="Close">×</button>
+      </div>
+
       <form id="movieForm">
         <input id="movieId" type="hidden">
         <label for="title">Movie title <span class="required">*</span></label>
         <input id="title" placeholder="Start typing a movie title..." maxlength="200" autocomplete="off" required>
         <div id="posterStatus" class="poster-status" aria-live="polite">We'll search for its poster automatically.</div>
         <div id="suggestions" class="suggestions hidden"></div>
-        <div class="poster-edit"><div id="posterPreview" class="poster-preview">✦</div><div class="poster-fields"><label for="year">Release year</label><input id="year" type="number" min="1888" max="2200" placeholder="e.g. 2014"><label for="posterUrl">Poster image URL <span class="optional">optional</span></label><input id="posterUrl" type="url" placeholder="https://..." inputmode="url"><small>We auto-fill the poster when we find a match. You can replace it with your own link.</small></div></div>
-        <div class="score-heading"><label for="rating">Your rating</label><output id="ratingDisplay" for="rating">8.0 <span>/ 10</span></output></div>
+
+        <div class="poster-edit">
+          <div id="posterPreview" class="poster-preview">✦</div>
+          <div class="poster-fields">
+            <label for="year">Release year</label>
+            <input id="year" type="number" min="1888" max="2200" placeholder="e.g. 2014">
+            <label for="posterUrl">Poster image URL <span class="optional">optional</span></label>
+            <input id="posterUrl" type="url" placeholder="https://..." inputmode="url">
+            <small>We auto-fill the poster when we find a match. You can replace it with your own link.</small>
+          </div>
+        </div>
+
+        <div class="score-heading">
+          <label for="rating">Your rating</label>
+          <output id="ratingDisplay" for="rating">8.0 <span>/ 10</span></output>
+        </div>
         <input id="rating" class="range" type="range" min="0" max="10" value="8" step="0.5">
         <div class="range-labels"><span>Not for me</span><span>Masterpiece</span></div>
-        <div class="quick-scores" aria-label="Quick ratings"><button type="button" data-score="6">6</button><button type="button" data-score="7">7</button><button type="button" data-score="8">8</button><button type="button" data-score="9">9</button><button type="button" data-score="10">10</button></div>
+
+        <div class="quick-scores" aria-label="Quick ratings">
+          <button type="button" data-score="6">6</button>
+          <button type="button" data-score="7">7</button>
+          <button type="button" data-score="8">8</button>
+          <button type="button" data-score="9">9</button>
+          <button type="button" data-score="10">10</button>
+        </div>
+
         <label for="watched">Date watched <span class="optional">optional</span></label>
         <input id="watched" type="date">
         <label for="review">Your thoughts <span class="optional">optional</span></label>
         <textarea id="review" maxlength="4000" rows="3" placeholder="What did you think of it?"></textarea>
-        <div class="form-actions"><button id="deleteMovie" type="button" class="danger-btn hidden">Delete</button><button id="cancel" type="button" class="ghost-btn">Cancel</button><button id="saveMovie" type="submit" class="primary-btn">Save movie <span>↗</span></button></div>
+
+        <div class="form-actions">
+          <button id="deleteMovie" type="button" class="danger-btn hidden">Delete</button>
+          <button id="cancel" type="button" class="ghost-btn">Cancel</button>
+          <button id="saveMovie" type="submit" class="primary-btn">Save movie <span>↗</span></button>
+        </div>
       </form>
     </section>
   </div>
